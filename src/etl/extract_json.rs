@@ -14,10 +14,8 @@ pub fn stream_jsonl(path: &str, tx: Sender<String>) -> std::io::Result<JoinHandl
         let decoder = GzDecoder::new(file);
         let reader = io::BufReader::with_capacity(16, decoder); //new(&mut decoder);
         let lines = reader.lines();
-        for line in lines {
-            if let Ok(line) = line {
-                let _ = tx.send(line);
-            }
+        for line in lines.map_while(Result::ok) {
+            let _ = tx.send(line);
         }
     });
     Ok(producer)
